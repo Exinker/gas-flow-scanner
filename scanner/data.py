@@ -1,5 +1,6 @@
 import pickle
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -85,18 +86,26 @@ class Data:
         return self.intensity.shape
 
     # --------        handler        --------
-    def show(self, figsize: tuple[Inch, Inch] = (8, 4), n_xticks: int = 11, n_yticks: int = 5) -> None:
+    def show(self, levels: int | Sequence[float] | None = None, figsize: tuple[Inch, Inch] = (8, 4), n_xticks: int = 11, n_yticks: int = 5) -> None:
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
 
-        # imshow
-        image = plt.imshow(
-            self.intensity.T,
-            origin='lower',
-            # interpolation='none',
-            # cmap=cmap, clim=(-.01, .5),
-            aspect='auto',
-        )
-        fig.colorbar(image, ax=ax)
+        # image
+        if levels is None:
+            plt.imshow(
+                self.intensity.T,
+                origin='lower',
+                # interpolation='none',
+                # cmap=cmap, clim=(-.01, .5),
+                aspect='auto',
+            )
+        else:
+            plt.contourf(
+                self.intensity.T,
+                levels=levels,
+            )
+
+        # colorbar
+        plt.colorbar()
 
         # ticks
         xarray = self.time if self.meta.velocity is None else self.distance
