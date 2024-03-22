@@ -8,6 +8,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 
+from scanner.data.utils import fetch_filedir
 from scanner.exception import LoadError
 from scanner.typing import Array, Inch, MicroMeter, MilliMeter, MilliSecond, Hz, Percent, Second
 
@@ -127,31 +128,31 @@ class Data:
 
         #
         if save:
-            filedir = os.path.join('.', 'img')
-            if not os.path.exists(filedir):
-                os.mkdir(filedir)
-
+            filedir = fetch_filedir(kind='img')
             filepath = os.path.join(filedir, f'{self.meta.label}.png')
             plt.savefig(filepath, dpi=300)
 
         #
         plt.show()
 
-    def save(self, path: str):
+    def save(self):
         """Сохранить объект в файл."""
-        with open(path, 'wb') as f:
-            pickle.dump(self, f)
+
+        filedir = fetch_filedir(kind='data')
+        filepath = os.path.join(filedir, f'{self.meta.label}.pkl')
+        with open(filepath, 'wb') as file:
+            pickle.dump(self, file)
 
     # --------        fabric        --------
     @classmethod
-    def load(cls, path: str) -> 'Data':
+    def load(cls, filepath: str) -> 'Data':
         """Прочитать объект из файла."""
 
-        with open(path, 'rb') as f:
-            result = pickle.load(f)
+        with open(filepath, 'rb') as file:
+            result = pickle.load(file)
 
         if not isinstance(result, cls):
-            raise LoadError(path)
+            raise LoadError(filepath)
 
         return result
 
