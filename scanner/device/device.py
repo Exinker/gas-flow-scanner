@@ -72,6 +72,7 @@ class Device:
     def read(
         self,
         exposure: MilliSecond,
+        velocity: float | None = None,  # in mm/s
         comment: str = None,
     ) -> Data:
         """Начать чтение в течение `exposure` мс."""
@@ -100,6 +101,7 @@ class Device:
             meta=DataMeta(
                 tau=self.config.tau,
                 factor=self.config.buffer_size,
+                velocity=velocity,
                 comment=comment,
             ),
         )
