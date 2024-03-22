@@ -96,8 +96,9 @@ class Data:
             plt.imshow(
                 self.intensity.T,
                 origin='lower',
-                # interpolation='none',
-                # cmap=cmap, clim=(-.01, .5),
+                interpolation='none',
+                # cmap=cmap,
+                clim=(-.1, 100),
                 aspect='auto',
             )
         else:

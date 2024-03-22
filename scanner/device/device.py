@@ -62,13 +62,41 @@ class Device:
         )
 
         self._wavelength = None
-        self._dark_data = None
+        self._dark = None
 
     @property
     def config(self) -> DeviceConfig:
         return self._config
 
-    # --------        read        --------
+    @property
+    def dark(self) -> Data:
+        return self._dark
+
+    # --------        handler        --------
+    def calibrate_dark(self, n_frames: int = 100) -> None:
+
+        # setup
+        self._device.set_config(
+            exposure=self.config.tau,
+            n_times=n_frames,
+        )
+
+        # read
+        data = self._device.read_raw()
+
+        # dark
+        intensity = data.intensity.mean(axis=0) * self.config.scale
+        clipped = data.clipped.max(axis=0)
+
+        self._dark = Data(
+            intensity=intensity,
+            clipped=clipped,
+            meta=DataMeta(
+                tau=self.config.tau,
+                factor=n_frames,
+            ),
+        )
+
     def read(
         self,
         exposure: MilliSecond,
@@ -89,10 +117,14 @@ class Device:
         )
 
         # read
-        data = self._device.read_raw()
+        raw = self._device.read_raw()
 
-        intensity = data.intensity.reshape((-1, data.n_numbers, self.config.buffer_size)).mean(axis=2)
-        clipped = data.clipped.reshape((-1, data.n_numbers, self.config.buffer_size)).max(axis=2)
+        intensity = raw.intensity.reshape((-1, self.config.buffer_size, raw.n_numbers)).mean(axis=1) * self.config.scale
+        clipped = raw.clipped.reshape((-1, self.config.buffer_size, raw.n_numbers)).max(axis=1)
+
+        if self.dark:
+            intensity = intensity - self.dark.intensity
+            clipped = clipped | self.dark.clipped
 
         #
         return Data(
