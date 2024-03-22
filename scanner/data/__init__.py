@@ -1,1 +1,1 @@
-from .data import Data, MetaData
+from .data import Data, DataMeta
