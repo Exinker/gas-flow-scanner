@@ -1,9 +1,12 @@
 import os
+import time
 from decimal import Decimal
 
 import matplotlib.pyplot as plt
 import numpy as np
+from IPython import display
 
+from pyspectrum.data import Data as Raw
 from pyspectrum.device_factory import UsbID
 from pyspectrum.spectrometer import Spectrometer, FactoryConfig
 
@@ -47,9 +50,14 @@ class DeviceConfig:
         return int(Decimal(1e+3) / Decimal(omega) / Decimal(tau))
 
     @property
+    def value_max(self) -> Digit:
+        """Макс значение АЦП."""
+        return 2**16 - 1
+
+    @property
     def scale(self) -> float:
         """Коэффициент перевода выходного сигнала (`Digit`) в интенсивность (`Percent`)."""
-        return 100 / (2**16 - 1)
+        return 100 / self.value_max
 
 
 class Device:
@@ -73,29 +81,51 @@ class Device:
         return self._dark
 
     # --------        handler        --------
-    def calibrate_dark(self, n_frames: int = 100) -> None:
+    def view(self, n_frames: int = 1) -> None:
 
-        # setup
-        self._device.set_config(
-            exposure=self.config.tau,
-            n_times=n_frames,
-        )
+        while True:
 
-        # read
-        data = self._device.read_raw()
+            # raw
+            raw = self._read(n_frames)
 
-        # dark
-        intensity = data.intensity.mean(axis=0) * self.config.scale
-        clipped = data.clipped.max(axis=0)
+            intensity = raw.intensity.mean(axis=0) * self.config.scale
+            if self.dark:
+                intensity -= self.dark.intensity
 
-        self._dark = Data(
-            intensity=intensity,
-            clipped=clipped,
-            meta=DataMeta(
-                tau=self.config.tau,
-                factor=n_frames,
-            ),
-        )
+            clipped = raw.clipped.max(axis=0)
+            if self.dark:
+                clipped = clipped | self.dark.clipped
+                
+            data = Data(
+                intensity=intensity,
+                clipped=clipped,
+                meta=DataMeta(
+                    tau=self.config.tau,
+                    factor=n_frames,
+                ),
+            )
+
+            # show
+            display.clear_output(wait=True)
+
+            figure, ax = plt.subplots(figsize=(8, 4), tight_layout=True)
+
+            plt.plot(
+                intensity,
+                color='black', linestyle='-',
+            )
+
+            mask = clipped == True
+            plt.plot(
+                data.number[mask], data.intensity[mask],
+                color='red', linestyle='none', marker='.', markersize=4,
+            )
+
+            plt.xlabel('number')
+            plt.ylabel('$I$, %')
+
+            plt.grid(color='grey', linestyle=':')
+            plt.pause(.001)
 
     def read(
         self,
@@ -110,14 +140,8 @@ class Device:
 
         n_frames = exposure // self.config.tau
 
-        # setup
-        self._device.set_config(
-            exposure=self.config.tau,
-            n_times=n_frames,
-        )
-
         # read
-        raw = self._device.read_raw()
+        raw = self._read(n_frames)
 
         intensity = raw.intensity.reshape((-1, self.config.buffer_size, raw.n_numbers)).mean(axis=1) * self.config.scale
         clipped = raw.clipped.reshape((-1, self.config.buffer_size, raw.n_numbers)).max(axis=1)
@@ -137,3 +161,58 @@ class Device:
                 comment=comment,
             ),
         )
+
+    def calibrate_dark(self, n_frames: int = 1_000, show: bool = True) -> None:
+
+        # read
+        raw = self._read(n_frames)
+
+        # dark
+        intensity = raw.intensity.mean(axis=0) * self.config.scale
+        clipped = raw.clipped.max(axis=0)
+
+        dark = Data(
+            intensity=intensity,
+            clipped=clipped,
+            meta=DataMeta(
+                tau=self.config.tau,
+                factor=n_frames,
+            ),
+        )
+
+        # show
+        if show:
+            figure, ax = plt.subplots(figsize=(8, 4), tight_layout=True)
+
+            plt.plot(
+                dark.number, dark.intensity,
+                color='black', linestyle='-',
+            )
+
+            mask = clipped == True
+            plt.plot(
+                dark.number[mask], dark.intensity[mask],
+                color='red', linestyle='none', marker='.', markersize=4,
+            )
+
+            plt.xlabel('number')
+            plt.ylabel('$I_d$, %')
+
+            plt.grid(color='grey', linestyle=':')
+            plt.show()
+
+        #
+        self._dark = dark
+
+    # --------        private        --------
+    def _read(self, n_frames: int = 1) -> Raw:
+        """Начать чтение в течение `exposure` мс."""
+
+        # setup
+        self._device.set_config(self.config.tau, n_frames)
+
+        # read
+        raw = self._device.read_raw()
+
+        #
+        return raw
