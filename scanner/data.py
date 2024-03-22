@@ -1,5 +1,7 @@
 import pickle
+import time
 from dataclasses import dataclass, field
+from datetime import datetime
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,7 +13,25 @@ from scanner.typing import Array, MilliSecond, Percent
 @dataclass(frozen=True)
 class DataMeta:
     tau: MilliSecond
-    factor: int = field(default=1)
+    factor: int
+
+    dt: datetime = field(default_factory=datetime.now)
+    comment: str = field(default=None)
+
+    @property
+    def label(self) -> str:
+        if self.comment is None:
+            return self.dt.strftime('%y.%m.%d %H.%M.%S')
+
+        return '{dt} ({comment})'.format(
+            dt=self.dt.strftime('%y.%m.%d %H.%M.%S'),
+            comment=self.comment,
+        )
+
+    # --------        private        --------
+    def __repr__(self) -> str:
+        cls = self.__class__
+        return f'{cls.__name__}(tau={self.tau}, factor={self.factor}, label={repr(self.label)})'
 
 
 @dataclass

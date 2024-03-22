@@ -69,7 +69,11 @@ class Device:
         return self._config
 
     # --------        read        --------
-    def read(self, exposure: MilliSecond) -> Data:
+    def read(
+        self,
+        exposure: MilliSecond,
+        comment: str = None,
+    ) -> Data:
         """Начать чтение в течение `exposure` мс."""
         assert isinstance(exposure, int), 'Время экспозиции `exposure` должно быть целым числом!'
         assert exposure % self.config.tau == 0, 'Время экспозиции `exposure` должно быть кратно базовой экспозиции `tau`!'
@@ -96,5 +100,6 @@ class Device:
             meta=DataMeta(
                 tau=self.config.tau,
                 factor=self.config.buffer_size,
+                comment=comment,
             ),
         )
