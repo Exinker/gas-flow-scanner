@@ -4,6 +4,7 @@ import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -136,13 +137,25 @@ class Data:
         #
         plt.show()
 
-    def save(self):
+    def save(self, mode: Literal['binary', 'txt'] = 'binary'):
         """Сохранить объект в файл."""
 
         filedir = fetch_filedir(kind='data')
-        filepath = os.path.join(filedir, f'{self.meta.label}.pkl')
-        with open(filepath, 'wb') as file:
-            pickle.dump(self, file)
+        match mode:
+            case 'binary':
+                filepath = os.path.join(filedir, f'{self.meta.label}.pkl')
+
+                with open(filepath, 'wb') as file:
+                    pickle.dump(self, file)
+            case 'txt':
+                filepath = os.path.join(filedir, f'{self.meta.label}.txt')
+
+                np.savetxt(
+                    filepath,
+                    self.intensity,
+                )
+            case _:
+                raise ValueError(f'Mode: {mode} is not supported yet!')
 
     # --------        fabric        --------
     @classmethod
