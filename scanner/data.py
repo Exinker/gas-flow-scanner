@@ -1,3 +1,4 @@
+import os
 import pickle
 import time
 from collections.abc import Sequence
@@ -86,7 +87,7 @@ class Data:
         return self.intensity.shape
 
     # --------        handler        --------
-    def show(self, levels: int | Sequence[float] | None = None, figsize: tuple[Inch, Inch] = (8, 4), n_xticks: int = 11, n_yticks: int = 5) -> None:
+    def show(self, levels: int | Sequence[float] | None = None, figsize: tuple[Inch, Inch] = (8, 4), n_xticks: int = 11, n_yticks: int = 7, save: bool = True) -> None:
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
 
         # image
@@ -123,6 +124,15 @@ class Data:
             plt.xlabel(r'$h$ [$mm$]')
 
         plt.ylabel(r'$x$ [$mm$]')
+
+        #
+        if save:
+            filedir = os.path.join('.', 'img')
+            if not os.path.exists(filedir):
+                os.mkdir(filedir)
+
+            filepath = os.path.join(filedir, f'{self.meta.label}.png')
+            plt.savefig(filepath, dpi=300)
 
         #
         plt.show()
