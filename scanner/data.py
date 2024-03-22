@@ -1,16 +1,17 @@
 import pickle
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .exception import LoadError
-from .typing import Array, MilliSecond, Percent
+from scanner.exception import LoadError
+from scanner.typing import Array, MilliSecond, Percent
 
 
 @dataclass(frozen=True)
 class DataMeta:
     tau: MilliSecond
+    factor: int = field(default=1)
 
 
 @dataclass
@@ -100,4 +101,4 @@ class Data:
     # --------        private        --------
     def __repr__(self) -> str:
         cls = self.__class__
-        return f'{cls.__name__}({self.n_times=}, {self.n_numbers=})'
+        return f'{cls.__name__}(n_times={self.n_times}, n_numbers={self.n_numbers})'

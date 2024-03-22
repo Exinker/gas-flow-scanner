@@ -86,11 +86,15 @@ class Device:
         # read
         data = self._device.read_raw()
 
+        intensity = data.intensity.reshape((-1, data.n_numbers, self.config.buffer_size)).mean(axis=2)
+        clipped = data.clipped.reshape((-1, data.n_numbers, self.config.buffer_size)).max(axis=2)
+
         #
         return Data(
-            intensity=data.intensity,
-            clipped=data.clipped,
+            intensity=intensity,
+            clipped=clipped,
             meta=DataMeta(
                 tau=self.config.tau,
+                factor=self.config.buffer_size,
             ),
         )
