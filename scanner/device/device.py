@@ -9,7 +9,7 @@ from pyspectrum.device_factory import UsbID
 from pyspectrum.spectrometer import FactoryConfig, Spectrometer
 
 from scanner.data import Data, DataMeta
-from scanner.typing import Digit, Hz, MilliSecond
+from scanner.typing import Digit, Hz, MilliMeter, MilliSecond
 
 
 class DeviceConfig:
@@ -128,7 +128,10 @@ class Device:
     def read(
         self,
         exposure: MilliSecond,
-        velocity: float | None = None,  # in mm/s
+        xoffset: MilliMeter = 0,
+        xscale: float = 1,
+        zoffset: MilliMeter = 0,
+        zscale: float = 1,
         comment: str = None,
     ) -> Data:
         """Начать чтение в течение `exposure` мс."""
@@ -155,7 +158,10 @@ class Device:
             meta=DataMeta(
                 tau=self.config.tau,
                 factor=self.config.buffer_size,
-                velocity=velocity,
+                xoffset=xoffset,
+                xscale=xscale,
+                zoffset=zoffset,
+                zscale=zscale,
                 comment=comment,
             ),
         )

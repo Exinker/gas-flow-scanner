@@ -24,9 +24,9 @@ class DataMeta:
     factor: int
     dt: datetime = field(default_factory=datetime.now)
 
-    xoffset: MicroMeter = field(default=0)
+    xoffset: MilliMeter = field(default=0)
     xscale: float = field(default=1)
-    zoffset: MicroMeter = field(default=0)
+    zoffset: MilliMeter = field(default=0)
     zscale: float = field(default=1)
     comment: str = field(default=None)
 
