@@ -89,23 +89,26 @@ class Data:
         return self.intensity.shape
 
     # --------        handler        --------
-    def show(self, levels: int | Sequence[float] | None = None, figsize: tuple[Inch, Inch] = (8, 4), n_xticks: int = 11, n_yticks: int = 7, save: bool = True) -> None:
+    def show(self, levels: int | Sequence[float] | None = None, figsize: tuple[Inch, Inch] = (8, 4), n_xticks: int = 11, n_yticks: int = 7, clim: tuple[float, float] | None = None, save: bool = True) -> None:
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
 
         # image
+        clim = clim or (-.1, 100)
+
         if levels is None:
             plt.imshow(
                 self.intensity.T,
                 origin='lower',
                 interpolation='none',
                 # cmap=cmap,
-                clim=(-.1, 100),
+                clim=clim,
                 aspect='auto',
             )
         else:
             plt.contourf(
                 self.intensity.T,
                 levels=levels,
+                clim=clim,
             )
 
         # colorbar
