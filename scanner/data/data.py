@@ -9,6 +9,7 @@ import matplotlib as mpl
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from scanner.data.utils import fetch_filedir
 from scanner.exception import LoadError
@@ -145,9 +146,19 @@ class Data:
 
         #
         if save:
+            # save img
             filedir = fetch_filedir(kind='img')
             filepath = os.path.join(filedir, f'{self.meta.label}.png')
             plt.savefig(filepath, dpi=300)
+
+            # save txt
+            filedir = fetch_filedir(kind='data')
+            filepath = os.path.join(filedir, f'{self.meta.label}.csv')
+            pd.DataFrame(
+                self.intensity,
+                index=self.xvalue,
+                columns=self.zvalue,
+            ).to_csv(filepath)
 
         #
         plt.show()
@@ -168,9 +179,10 @@ class Data:
             t = np.argmin(np.abs(self.xvalue - x0))
 
             #
+            x = self.zvalue
+            y = self.intensity[t, :]
             plt.plot(
-                self.zvalue,
-                self.intensity[t, :],
+                x, y,
                 color='black', linestyle='-', linewidth=1.0,
             )
 
@@ -182,9 +194,10 @@ class Data:
             n = np.argmin(np.abs(self.zvalue - z0))
 
             #
+            x = self.xvalue
+            y = self.intensity[:, n]
             plt.plot(
-                self.xvalue,
-                self.intensity[:, n],
+                x, y,
                 color='black', linestyle='-', linewidth=1.0,
             )
 
@@ -194,35 +207,38 @@ class Data:
 
         #
         if save:
+            label = f'z0{z0}' if z0 is not None else f'x0{x0}'
+
+            # save img
             filedir = fetch_filedir(kind='img')
-            filepath = os.path.join(filedir, '{label}-{position}.png'.format(
-                label=self.meta.label,
-                position=f'z0{z0}' if z0 is not None else f'x0{x0}',
+            filepath = os.path.join(filedir, '{meta}-{label}.png'.format(
+                meta=self.meta.label,
+                label=label,
             ))
             plt.savefig(filepath, dpi=300)
+
+            # save txt
+            filedir = fetch_filedir(kind='data')
+            filepath = os.path.join(filedir, '{meta}-{label}.csv'.format(
+                meta=self.meta.label,
+                label=label,
+            ))
+            pd.DataFrame(
+                y,
+                index=list(x),
+                columns=[label],
+            ).to_csv(filepath)
 
         #
         plt.show()
 
-    def save(self, mode: Literal['binary', 'txt'] = 'binary'):
+    def save(self):
         """Сохранить объект в файл."""
 
         filedir = fetch_filedir(kind='data')
-        match mode:
-            case 'binary':
-                filepath = os.path.join(filedir, f'{self.meta.label}.pkl')
-
-                with open(filepath, 'wb') as file:
-                    pickle.dump(self, file)
-            case 'txt':
-                filepath = os.path.join(filedir, f'{self.meta.label}.txt')
-
-                np.savetxt(
-                    filepath,
-                    self.intensity,
-                )
-            case _:
-                raise ValueError(f'Mode: {mode} is not supported yet!')
+        filepath = os.path.join(filedir, f'{self.meta.label}.pkl')
+        with open(filepath, 'wb') as file:
+            pickle.dump(self, file)
 
     # --------        fabric        --------
     @classmethod
