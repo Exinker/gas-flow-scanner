@@ -152,6 +152,58 @@ class Data:
         #
         plt.show()
 
+    def graph(
+        self,
+        x0: MilliMeter | None = None,
+        z0: MilliMeter | None = None,
+        figsize: tuple[Inch, Inch] = (8, 4),
+        save: bool = True,
+    ):
+        assert ((x0 is None) and (z0 is not None)) or ((x0 is not None) and (z0 is None))
+
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
+
+        #
+        if x0 is not None:
+            t = np.argmin(np.abs(self.xvalue - x0))
+
+            #
+            plt.plot(
+                self.zvalue,
+                self.intensity[t, :],
+                color='black', linestyle='-', linewidth=1.0,
+            )
+
+            # labels
+            plt.xlabel(r'$z$, $mm$')
+            plt.ylabel(r'$Интенсивность$, $отн. ед.$')
+
+        if z0 is not None:
+            n = np.argmin(np.abs(self.zvalue - z0))
+
+            #
+            plt.plot(
+                self.xvalue,
+                self.intensity[:, n],
+                color='black', linestyle='-', linewidth=1.0,
+            )
+
+            # labels
+            plt.xlabel(r'$x$, $mm$')
+            plt.ylabel(r'$Интенсивность$, $отн. ед.$')
+
+        #
+        if save:
+            filedir = fetch_filedir(kind='img')
+            filepath = os.path.join(filedir, '{label}-{position}.png'.format(
+                label=self.meta.label,
+                position=f'z0{z0}' if z0 is not None else f'x0{x0}',
+            ))
+            plt.savefig(filepath, dpi=300)
+
+        #
+        plt.show()
+
     def save(self, mode: Literal['binary', 'txt'] = 'binary'):
         """Сохранить объект в файл."""
 
