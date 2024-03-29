@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Literal
 
+import matplotlib as mpl
+import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -89,18 +91,28 @@ class Data:
         return self.intensity.shape
 
     # --------        handler        --------
-    def show(self, levels: int | Sequence[float] | None = None, figsize: tuple[Inch, Inch] = (8, 4), n_xticks: int = 11, n_yticks: int = 7, clim: tuple[float, float] | None = None, save: bool = True) -> None:
+    def show(
+        self,
+        levels: int | Sequence[float] | None = None,
+        figsize: tuple[Inch, Inch] = (8, 4),
+        n_xticks: int = 11,
+        n_yticks: int = 7,
+        clim: tuple[float, float] | None = None,
+        cmap: mpl.colors.LinearSegmentedColormap | None = None,
+        save: bool = True,
+    ) -> None:
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
 
         # image
         clim = clim or (-.1, 100)
+        cmap = cmap or cm.viridis
 
         if levels is None:
             plt.imshow(
                 self.intensity.T,
                 origin='lower',
                 interpolation='none',
-                # cmap=cmap,
+                cmap=cmap,
                 clim=clim,
                 aspect='auto',
             )
@@ -108,7 +120,7 @@ class Data:
             plt.contourf(
                 self.intensity.T,
                 levels=levels,
-                clim=clim,
+                cmap=cmap,
             )
 
         # colorbar
