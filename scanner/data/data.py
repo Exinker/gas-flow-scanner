@@ -1,6 +1,5 @@
 import os
 import pickle
-import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -11,7 +10,7 @@ import numpy as np
 
 from scanner.data.utils import fetch_filedir
 from scanner.exception import LoadError
-from scanner.typing import Array, Inch, MicroMeter, MilliMeter, MilliSecond, Hz, Percent, Second
+from scanner.typing import Array, Hz, Inch, MicroMeter, MilliMeter, MilliSecond, Percent, Second
 
 
 WIDTH: MicroMeter = 7  # detector's pixel width

@@ -1,17 +1,15 @@
 import os
-import time
 from decimal import Decimal
 
 import matplotlib.pyplot as plt
-import numpy as np
 from IPython import display
 
 from pyspectrum.data import Data as Raw
 from pyspectrum.device_factory import UsbID
-from pyspectrum.spectrometer import Spectrometer, FactoryConfig
+from pyspectrum.spectrometer import FactoryConfig, Spectrometer
 
 from scanner.data import Data, DataMeta
-from scanner.typing import Array, Digit, Hz, MilliSecond
+from scanner.typing import Digit, Hz, MilliSecond
 
 
 class DeviceConfig:
@@ -66,7 +64,7 @@ class Device:
         self._config = config
         self._device = Spectrometer(
             UsbID(),
-            factory_config=FactoryConfig.load(os.path.join(os.path.split(os.path.abspath(__file__))[0], 'factory_config.json'))
+            factory_config=FactoryConfig.load(os.path.join(os.path.split(os.path.abspath(__file__))[0], 'factory_config.json')),
         )
 
         self._wavelength = None
@@ -95,7 +93,7 @@ class Device:
             clipped = raw.clipped.max(axis=0)
             if self.dark:
                 clipped = clipped | self.dark.clipped
-                
+
             data = Data(
                 intensity=intensity,
                 clipped=clipped,
