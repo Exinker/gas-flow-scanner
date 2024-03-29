@@ -156,7 +156,7 @@ class Data:
         self,
         x0: MilliMeter | None = None,
         z0: MilliMeter | None = None,
-        figsize: tuple[Inch, Inch] = (8, 4),
+        figsize: tuple[Inch, Inch] = (6, 4),
         save: bool = True,
     ):
         assert ((x0 is None) and (z0 is not None)) or ((x0 is not None) and (z0 is None))
@@ -168,9 +168,14 @@ class Data:
             t = np.argmin(np.abs(self.xvalue - x0))
 
             #
+            intensity = self.intensity[t, :].copy()
+            if len(intensity) == 4096:  # TODO: сигнал с краевых отсчетов нужно обрезать!
+                intensity[:+10] = np.nan
+                intensity[-10:] = np.nan
+
             plt.plot(
                 self.zvalue,
-                self.intensity[t, :],
+                intensity,
                 color='black', linestyle='-', linewidth=1.0,
             )
 
