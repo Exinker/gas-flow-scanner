@@ -186,7 +186,6 @@ class Data:
         return result
 
     # --------        private        --------
-
     def __repr__(self) -> str:
         cls = self.__class__
         return f'{cls.__name__}(n_times={self.n_times}, n_numbers={self.n_numbers})'
