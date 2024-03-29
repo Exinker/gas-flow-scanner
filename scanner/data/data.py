@@ -168,14 +168,9 @@ class Data:
             t = np.argmin(np.abs(self.xvalue - x0))
 
             #
-            intensity = self.intensity[t, :].copy()
-            if len(intensity) == 4096:  # TODO: сигнал с краевых отсчетов нужно обрезать!
-                intensity[:+10] = np.nan
-                intensity[-10:] = np.nan
-
             plt.plot(
                 self.zvalue,
-                intensity,
+                self.intensity[t, :],
                 color='black', linestyle='-', linewidth=1.0,
             )
 

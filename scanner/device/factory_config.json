@@ -1,6 +1,6 @@
 {
-  "start": 0,
-  "end": 4096,
+  "start": 10,
+  "end": 4086,
   "reverse": true,
   "intensity_scale": 1
 }
