@@ -19,13 +19,16 @@ from scanner.typing import Array, Inch, MicroMeter, MilliMeter, MilliSecond, Hz,
 WIDTH: MicroMeter = 7  # detector's pixel width
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class DataMeta:
     tau: MilliSecond
     factor: int
     dt: datetime = field(default_factory=datetime.now)
 
-    velocity: float = field(default=None)  # in mm/s
+    xoffset: MicroMeter = field(default=0)
+    xscale: float = field(default=1)
+    zoffset: MicroMeter = field(default=0)
+    zscale: float = field(default=1)
     comment: str = field(default=None)
 
     @property
@@ -45,7 +48,7 @@ class DataMeta:
     # --------        private        --------
     def __repr__(self) -> str:
         cls = self.__class__
-        return f'{cls.__name__}(tau={self.tau}, factor={self.factor}, velocity={self.velocity}, label={repr(self.label)})'
+        return f'{cls.__name__}(tau={self.tau}, factor={self.factor}, label={repr(self.label)})'
 
 
 @dataclass
@@ -71,8 +74,8 @@ class Data:
         return self._time
 
     @property
-    def distance(self) -> Array[float] | Array[MilliMeter]:
-        return self.time * self.meta.velocity
+    def xvalue(self) -> Array[MilliMeter]:
+        return self.meta.xoffset + self.time*self.meta.xscale
 
     @property
     def n_numbers(self) -> int:
@@ -84,6 +87,10 @@ class Data:
     @property
     def number(self) -> Array[int]:
         return self._number
+
+    @property
+    def zvalue(self) -> Array[MilliMeter]:
+        return self.meta.zoffset + self.number*WIDTH/1000*self.meta.zscale
 
     @property
     def shape(self) -> tuple[int, int]:
@@ -127,21 +134,15 @@ class Data:
         plt.colorbar()
 
         # ticks
-        xarray = self.time if self.meta.velocity is None else self.distance
         ax.set_xticks(np.arange(0, self.n_times, self.n_times//(n_xticks - 1)))
-        ax.set_xticklabels([f'{xarray[n]}' for n in ax.get_xticks()])
+        ax.set_xticklabels([f'{self.xvalue[n]}' for n in ax.get_xticks()])
 
-        yarray = WIDTH*self.number/1000
         ax.set_yticks(np.arange(0, self.n_numbers, self.n_numbers//(n_yticks - 1)))
-        ax.set_yticklabels([f'{yarray[n]:.1f}' for n in ax.get_yticks()])
+        ax.set_yticklabels([f'{self.zvalue[n]:.1f}' for n in ax.get_yticks()])
 
         # labels
-        if self.meta.velocity is None:
-            plt.xlabel(r'time [$s$]')
-        else:
-            plt.xlabel(r'$h$ [$mm$]')
-
-        plt.ylabel(r'$x$ [$mm$]')
+        plt.xlabel(r'$x$, $mm$')
+        plt.ylabel(r'$z$, $mm$')
 
         #
         if save:
@@ -186,6 +187,7 @@ class Data:
         return result
 
     # --------        private        --------
+
     def __repr__(self) -> str:
         cls = self.__class__
         return f'{cls.__name__}(n_times={self.n_times}, n_numbers={self.n_numbers})'
