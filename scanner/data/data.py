@@ -170,11 +170,16 @@ class Data:
         figsize: tuple[Inch, Inch] = (6, 4),
         save: bool = True,
     ):
-        assert ((x0 is None) and (z0 is not None)) or ((x0 is not None) and (z0 is None))
-
-        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
+        if x0 is not None:
+            assert z0 is None
+            assert min(self.xvalue) <= x0 <= max(self.xvalue)
+        if z0 is not None:
+            assert x0 is None
+            assert min(self.zvalue) <= z0 <= max(self.zvalue)
 
         #
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
+
         if x0 is not None:
             t = np.argmin(np.abs(self.xvalue - x0))
 
