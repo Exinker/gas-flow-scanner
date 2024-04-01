@@ -205,6 +205,8 @@ class Data:
             plt.xlabel(r'$x$, $mm$')
             plt.ylabel(r'$Интенсивность$, $отн. ед.$')
 
+        plt.grid(color='grey', linestyle=':')
+
         #
         if save:
             label = f'z0{z0}' if z0 is not None else f'x0{x0}'
