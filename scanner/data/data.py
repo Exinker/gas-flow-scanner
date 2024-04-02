@@ -3,7 +3,6 @@ import pickle
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Literal
 
 import matplotlib as mpl
 import matplotlib.cm as cm
@@ -214,7 +213,7 @@ class Data:
 
         #
         if save:
-            label = f'z0{z0}' if z0 is not None else f'x0{x0}'
+            label = f'z0={z0}' if z0 is not None else f'x0={x0}'
 
             # save img
             filedir = fetch_filedir(kind='img')
