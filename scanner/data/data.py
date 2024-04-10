@@ -134,7 +134,7 @@ class Data:
 
         # ticks
         ax.set_xticks(np.arange(0, self.n_times, self.n_times//(n_xticks - 1)))
-        ax.set_xticklabels([f'{self.xvalue[n]}' for n in ax.get_xticks()])
+        ax.set_xticklabels([f'{self.xvalue[n]:.1f}' for n in ax.get_xticks()])
 
         ax.set_yticks(np.arange(0, self.n_numbers, self.n_numbers//(n_yticks - 1)))
         ax.set_yticklabels([f'{self.zvalue[n]:.1f}' for n in ax.get_yticks()])
